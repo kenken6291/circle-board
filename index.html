@@ -8,7 +8,6 @@
 </head>
 <body>
 
-  <!-- ローディング表示 -->
   <div id="loading" class="loading-overlay hidden">
     <div class="spinner"></div>
   </div>
@@ -136,10 +135,10 @@
     </div>
   </div>
 
-  <!-- 掲示板画面 -->
-  <div id="boardScreen" class="screen hidden">
+  <!-- サークル・イベント一覧画面 -->
+  <div id="eventListScreen" class="screen hidden">
     <header class="board-header">
-      <h1 class="app-title-sm">🏠 サークル掲示板</h1>
+      <h1 class="app-title-sm">🏠 サークル・イベント一覧</h1>
       <div class="user-info">
         <span id="userNameLabel"></span>
         <button id="profileBtn" class="btn btn-ghost">設定</button>
@@ -148,8 +147,94 @@
     </header>
 
     <main class="board-main">
+      <button id="newEventBtn" class="btn btn-primary btn-block">＋ サークル・イベントを作成</button>
+
+      <div id="eventList" class="event-list"></div>
+      <p id="eventEmptyMessage" class="empty-message hidden">まだサークル・イベントが登録されていません。</p>
+    </main>
+  </div>
+
+  <!-- サークル・イベント作成/編集画面 -->
+  <div id="eventFormScreen" class="screen hidden">
+    <header class="board-header">
+      <h1 id="eventFormTitle" class="app-title-sm">＋ サークル・イベントを作成</h1>
+      <div class="user-info">
+        <button id="cancelEventFormBtn" class="btn btn-ghost">一覧に戻る</button>
+      </div>
+    </header>
+
+    <main class="board-main">
+      <div class="card">
+        <form id="eventForm">
+          <input type="hidden" id="eventFormId">
+
+          <label for="eventTitle">サークル・イベント名</label>
+          <input type="text" id="eventTitle" required maxlength="60" placeholder="例）秋のサイクリング会">
+
+          <label for="eventDescription">説明・詳細（任意）</label>
+          <textarea id="eventDescription" maxlength="1000" placeholder="集合場所や持ち物など"></textarea>
+
+          <label for="eventStartDate">開始日</label>
+          <input type="date" id="eventStartDate">
+
+          <label for="eventEndDate">期限（終了日）</label>
+          <input type="date" id="eventEndDate">
+
+          <button type="submit" class="btn btn-primary">保存する</button>
+        </form>
+        <p id="eventFormError" class="error-text hidden"></p>
+      </div>
+    </main>
+  </div>
+
+  <!-- サークル・イベント詳細画面（参加登録＋掲示板） -->
+  <div id="eventDetailScreen" class="screen hidden">
+    <header class="board-header">
+      <h1 class="app-title-sm">📌 <span id="eventDetailTitle"></span></h1>
+      <div class="user-info">
+        <button id="backToListBtn" class="btn btn-ghost">一覧に戻る</button>
+      </div>
+    </header>
+
+    <main class="board-main">
+      <div class="card event-info-card">
+        <p id="eventDetailPeriod" class="event-period"></p>
+        <p id="eventDetailDescription" class="event-description"></p>
+
+        <div id="eventOwnerActions" class="owner-actions hidden">
+          <button id="editEventBtn" class="btn btn-ghost">編集</button>
+          <button id="deleteEventBtn" class="btn btn-ghost btn-danger">削除</button>
+        </div>
+
+        <div class="participation-box">
+          <p class="participation-label">参加登録</p>
+          <div class="participation-buttons">
+            <button id="joinBtn" class="btn btn-join">参加する</button>
+            <button id="declineBtn" class="btn btn-decline">不参加にする</button>
+          </div>
+          <p id="myStatusLabel" class="my-status"></p>
+        </div>
+
+        <div class="participant-summary">
+          <span id="joinCountLabel">参加 0人</span>
+          <span id="declineCountLabel">不参加 0人</span>
+          <a href="#" id="showParticipantsLink">参加者一覧を見る</a>
+        </div>
+
+        <div id="participantListBox" class="participant-list-box hidden">
+          <div class="participant-column">
+            <p class="participant-column-title">参加</p>
+            <ul id="joinedList" class="participant-ul"></ul>
+          </div>
+          <div class="participant-column">
+            <p class="participant-column-title">不参加</p>
+            <ul id="declinedList" class="participant-ul"></ul>
+          </div>
+        </div>
+      </div>
+
       <form id="postForm" class="post-form">
-        <textarea id="postContent" placeholder="今日の出来事や連絡事項をシェアしよう…" maxlength="1000" required></textarea>
+        <textarea id="postContent" placeholder="連絡事項や感想をシェアしよう…" maxlength="1000" required></textarea>
         <div class="post-form-footer">
           <span id="charCount" class="char-count">0 / 1000</span>
           <button type="submit" class="btn btn-primary">投稿する</button>
@@ -168,7 +253,7 @@
     <header class="board-header">
       <h1 class="app-title-sm">⚙️ マイページ</h1>
       <div class="user-info">
-        <button id="backToBoardBtn" class="btn btn-ghost">掲示板に戻る</button>
+        <button id="backToBoardBtn" class="btn btn-ghost">一覧に戻る</button>
       </div>
     </header>
 

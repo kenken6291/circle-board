@@ -220,6 +220,213 @@ input:focus, textarea:focus {
   margin: 0 0 14px;
 }
 
+/* ---- ボタン追加バリエーション ---- */
+.btn-block {
+  display: block;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.btn-danger {
+  color: var(--color-error);
+  border-color: var(--color-error);
+}
+.btn-danger:hover { background: #fbeceb; }
+
+.btn-join {
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+}
+.btn-join:hover { background: var(--color-primary-dark); }
+.btn-join.active {
+  outline: 3px solid #cfe3d5;
+}
+
+.btn-decline {
+  background: #fff;
+  color: var(--color-error);
+  border: 1px solid var(--color-error);
+}
+.btn-decline:hover { background: #fbeceb; }
+.btn-decline.active {
+  outline: 3px solid #f3cfc9;
+}
+
+/* ---- イベント一覧 ---- */
+.event-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.event-card {
+  background: var(--color-card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 16px 18px;
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+.event-card:hover { transform: translateY(-2px); }
+
+.event-card-title {
+  font-weight: 700;
+  font-size: 1.05rem;
+  margin: 0 0 6px;
+}
+
+.event-card-period {
+  font-size: 0.8rem;
+  color: var(--color-muted);
+  margin: 0 0 8px;
+}
+
+.event-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.8rem;
+}
+
+.event-card-counts {
+  color: var(--color-muted);
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+.status-badge.join { background: #e4f0e7; color: var(--color-primary-dark); }
+.status-badge.decline { background: #fbeceb; color: var(--color-error); }
+.status-badge.none { background: #eee; color: var(--color-muted); }
+
+/* ---- イベント詳細 ---- */
+.event-info-card {
+  margin-bottom: 24px;
+}
+
+.event-period {
+  font-size: 0.85rem;
+  color: var(--color-muted);
+  margin: 0 0 10px;
+}
+
+.event-description {
+  white-space: pre-wrap;
+  line-height: 1.6;
+  font-size: 0.92rem;
+  margin: 0 0 16px;
+}
+
+.owner-actions {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.participation-box {
+  border-top: 1px solid var(--color-border);
+  padding-top: 16px;
+  margin-top: 4px;
+}
+
+.participation-label {
+  font-weight: 700;
+  font-size: 0.9rem;
+  margin: 0 0 10px;
+}
+
+.participation-buttons {
+  display: flex;
+  gap: 10px;
+}
+.participation-buttons .btn { flex: 1; }
+
+.my-status {
+  font-size: 0.8rem;
+  color: var(--color-muted);
+  margin-top: 8px;
+  text-align: center;
+}
+
+.participant-summary {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 16px;
+  font-size: 0.82rem;
+  color: var(--color-muted);
+}
+
+.participant-summary a {
+  color: var(--color-primary-dark);
+  text-decoration: none;
+  margin-left: auto;
+}
+.participant-summary a:hover { text-decoration: underline; }
+
+.participant-list-box {
+  display: flex;
+  gap: 20px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--color-border);
+}
+
+.participant-column { flex: 1; }
+
+.participant-column-title {
+  font-weight: 700;
+  font-size: 0.8rem;
+  margin: 0 0 6px;
+}
+
+.participant-ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--color-text);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* ---- 投稿カードの編集/削除ボタン ---- */
+.post-card-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.post-card-actions button {
+  background: none;
+  border: none;
+  color: var(--color-muted);
+  font-size: 0.78rem;
+  cursor: pointer;
+  padding: 0;
+}
+.post-card-actions button:hover { color: var(--color-primary-dark); text-decoration: underline; }
+.post-card-actions .delete-link:hover { color: var(--color-error); }
+
+.post-edit-form textarea {
+  min-height: 70px;
+  margin-bottom: 8px;
+}
+.post-edit-actions {
+  display: flex;
+  gap: 8px;
+}
+.post-edit-actions .btn {
+  padding: 8px 14px;
+  font-size: 0.85rem;
+}
+
 /* ---- 掲示板画面 ---- */
 .board-header {
   position: sticky;
