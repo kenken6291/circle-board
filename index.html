@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>サークル内掲示板</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ローディング表示 -->
+  <div id="loading" class="loading-overlay hidden">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- ログイン画面 -->
+  <div id="loginScreen" class="screen">
+    <div class="card login-card">
+      <h1 class="app-title">🏠 サークル内掲示板</h1>
+      <p class="app-sub">メンバー限定の掲示板です</p>
+
+      <form id="loginForm">
+        <label for="loginEmail">メールアドレス</label>
+        <input type="email" id="loginEmail" required placeholder="you@example.com" autocomplete="username">
+
+        <label for="loginPassword">パスワード</label>
+        <input type="password" id="loginPassword" required placeholder="パスワード" autocomplete="current-password">
+
+        <button type="submit" class="btn btn-primary">ログイン</button>
+      </form>
+
+      <p id="loginError" class="error-text hidden"></p>
+    </div>
+  </div>
+
+  <!-- 掲示板画面 -->
+  <div id="boardScreen" class="screen hidden">
+    <header class="board-header">
+      <h1 class="app-title-sm">🏠 サークル掲示板</h1>
+      <div class="user-info">
+        <span id="userNameLabel"></span>
+        <button id="logoutBtn" class="btn btn-ghost">ログアウト</button>
+      </div>
+    </header>
+
+    <main class="board-main">
+      <form id="postForm" class="post-form">
+        <textarea id="postContent" placeholder="今日の出来事や連絡事項をシェアしよう…" maxlength="1000" required></textarea>
+        <div class="post-form-footer">
+          <span id="charCount" class="char-count">0 / 1000</span>
+          <button type="submit" class="btn btn-primary">投稿する</button>
+        </div>
+      </form>
+
+      <p id="postError" class="error-text hidden"></p>
+
+      <div id="postList" class="post-list"></div>
+      <p id="emptyMessage" class="empty-message hidden">まだ投稿がありません。最初の投稿をしてみましょう！</p>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
