@@ -8,42 +8,131 @@ const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbzfd0MN3uqMkjAzWpBm
 
 const STORAGE_KEY = 'circleBoardSession';
 
-/* ---- DOM参照 ---- */
-const loginScreen = document.getElementById('loginScreen');
-const boardScreen = document.getElementById('boardScreen');
+/* ---- 画面要素 ---- */
+const screens = {
+  login: document.getElementById('loginScreen'),
+  register: document.getElementById('registerScreen'),
+  forgot: document.getElementById('forgotScreen'),
+  forceChange: document.getElementById('forceChangeScreen'),
+  board: document.getElementById('boardScreen'),
+  profile: document.getElementById('profileScreen')
+};
+
+/* ---- ログイン ---- */
 const loginForm = document.getElementById('loginForm');
 const loginError = document.getElementById('loginError');
+const loginMessage = document.getElementById('loginMessage');
+
+/* ---- 会員登録 ---- */
+const registerForm = document.getElementById('registerForm');
+const registerError = document.getElementById('registerError');
+const registerMessage = document.getElementById('registerMessage');
+
+/* ---- パスワード再発行 ---- */
+const forgotForm = document.getElementById('forgotForm');
+const forgotError = document.getElementById('forgotError');
+const forgotMessage = document.getElementById('forgotMessage');
+
+/* ---- 初回パスワード変更 ---- */
+const forceChangeForm = document.getElementById('forceChangeForm');
+const forceChangeError = document.getElementById('forceChangeError');
+let pendingLoginEmail = null; // 初回ログイン変更時に使う一時保持
+
+/* ---- 掲示板 ---- */
 const userNameLabel = document.getElementById('userNameLabel');
 const logoutBtn = document.getElementById('logoutBtn');
+const profileBtn = document.getElementById('profileBtn');
 const postForm = document.getElementById('postForm');
 const postContent = document.getElementById('postContent');
 const postError = document.getElementById('postError');
 const postList = document.getElementById('postList');
 const emptyMessage = document.getElementById('emptyMessage');
 const charCount = document.getElementById('charCount');
+
+/* ---- マイページ ---- */
+const backToBoardBtn = document.getElementById('backToBoardBtn');
+const nicknameForm = document.getElementById('nicknameForm');
+const profileNickname = document.getElementById('profileNickname');
+const nicknameError = document.getElementById('nicknameError');
+const nicknameMessage = document.getElementById('nicknameMessage');
+const pwChangeForm = document.getElementById('pwChangeForm');
+const pwChangeError = document.getElementById('pwChangeError');
+const pwChangeMessage = document.getElementById('pwChangeMessage');
+
 const loading = document.getElementById('loading');
 
 /* ---- 初期化 ---- */
 document.addEventListener('DOMContentLoaded', () => {
+  setupPasswordToggles();
+
   const session = getSession();
   if (session && session.token) {
     showBoard(session);
   } else {
-    showLogin();
+    showScreen('login');
   }
 });
 
+/* ---- 画面切り替えリンク ---- */
+document.getElementById('showRegister').addEventListener('click', (e) => {
+  e.preventDefault();
+  showScreen('register');
+});
+document.getElementById('showForgot').addEventListener('click', (e) => {
+  e.preventDefault();
+  showScreen('forgot');
+});
+document.getElementById('backToLoginFromRegister').addEventListener('click', (e) => {
+  e.preventDefault();
+  showScreen('login');
+});
+document.getElementById('backToLoginFromForgot').addEventListener('click', (e) => {
+  e.preventDefault();
+  showScreen('login');
+});
+profileBtn.addEventListener('click', () => {
+  const session = getSession();
+  if (session) profileNickname.value = session.nickname;
+  showScreen('profile');
+});
+backToBoardBtn.addEventListener('click', () => showScreen('board'));
+
+/* ---- イベント登録 ---- */
 loginForm.addEventListener('submit', onLoginSubmit);
+registerForm.addEventListener('submit', onRegisterSubmit);
+forgotForm.addEventListener('submit', onForgotSubmit);
+forceChangeForm.addEventListener('submit', onForceChangeSubmit);
 postForm.addEventListener('submit', onPostSubmit);
 logoutBtn.addEventListener('click', onLogout);
+nicknameForm.addEventListener('submit', onNicknameSubmit);
+pwChangeForm.addEventListener('submit', onPwChangeSubmit);
+
 postContent.addEventListener('input', () => {
   charCount.textContent = `${postContent.value.length} / 1000`;
 });
+
+/* ---- パスワード表示/非表示トグル ---- */
+function setupPasswordToggles() {
+  document.querySelectorAll('.pw-toggle').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const targetId = btn.getAttribute('data-target');
+      const input = document.getElementById(targetId);
+      if (input.type === 'password') {
+        input.type = 'text';
+        btn.textContent = '非表示';
+      } else {
+        input.type = 'password';
+        btn.textContent = '表示';
+      }
+    });
+  });
+}
 
 /* ---- ログイン処理 ---- */
 async function onLoginSubmit(e) {
   e.preventDefault();
   hide(loginError);
+  hide(loginMessage);
 
   const email = document.getElementById('loginEmail').value.trim();
   const password = document.getElementById('loginPassword').value;
@@ -52,14 +141,124 @@ async function onLoginSubmit(e) {
   try {
     const res = await callApi({ action: 'login', email, password });
     if (res.success) {
-      const session = { token: res.token, name: res.name, email: res.email };
-      saveSession(session);
-      showBoard(session);
+      if (res.mustChangePassword) {
+        pendingLoginEmail = email;
+        forceChangeForm.reset();
+        showScreen('forceChange');
+      } else {
+        const session = { token: res.token, nickname: res.nickname, email: res.email };
+        saveSession(session);
+        showBoard(session);
+      }
     } else {
       showError(loginError, res.message || 'ログインに失敗しました。');
     }
   } catch (err) {
     showError(loginError, '通信エラーが発生しました。時間をおいて再度お試しください。');
+  } finally {
+    setLoading(false);
+  }
+}
+
+/* ---- 会員登録処理 ---- */
+async function onRegisterSubmit(e) {
+  e.preventDefault();
+  hide(registerError);
+  hide(registerMessage);
+
+  const email = document.getElementById('registerEmail').value.trim();
+  const nickname = document.getElementById('registerNickname').value.trim();
+  const agreeTerms = document.getElementById('agreeTerms').checked;
+
+  if (!agreeTerms) {
+    showError(registerError, '注意事項・免責事項への同意が必要です。');
+    return;
+  }
+
+  setLoading(true);
+  try {
+    const res = await callApi({ action: 'register', email, nickname, agreeTerms });
+    if (res.success) {
+      registerForm.reset();
+      showInfo(registerMessage, res.message);
+    } else {
+      showError(registerError, res.message || '登録に失敗しました。');
+    }
+  } catch (err) {
+    showError(registerError, '通信エラーが発生しました。時間をおいて再度お試しください。');
+  } finally {
+    setLoading(false);
+  }
+}
+
+/* ---- パスワード再発行処理 ---- */
+async function onForgotSubmit(e) {
+  e.preventDefault();
+  hide(forgotError);
+  hide(forgotMessage);
+
+  const email = document.getElementById('forgotEmail').value.trim();
+
+  setLoading(true);
+  try {
+    const res = await callApi({ action: 'forgotPassword', email });
+    if (res.success) {
+      forgotForm.reset();
+      showInfo(forgotMessage, res.message);
+    } else {
+      showError(forgotError, res.message || '処理に失敗しました。');
+    }
+  } catch (err) {
+    showError(forgotError, '通信エラーが発生しました。時間をおいて再度お試しください。');
+  } finally {
+    setLoading(false);
+  }
+}
+
+/* ---- 初回ログイン時のパスワード変更 ---- */
+async function onForceChangeSubmit(e) {
+  e.preventDefault();
+  hide(forceChangeError);
+
+  const currentPassword = document.getElementById('forceCurrentPassword').value;
+  const newPassword = document.getElementById('forceNewPassword').value;
+  const newPassword2 = document.getElementById('forceNewPassword2').value;
+
+  if (newPassword !== newPassword2) {
+    showError(forceChangeError, '新しいパスワードが一致しません。');
+    return;
+  }
+  if (newPassword.length < 8) {
+    showError(forceChangeError, '新しいパスワードは8文字以上にしてください。');
+    return;
+  }
+
+  setLoading(true);
+  try {
+    // まず仮パスワードでログインしてトークンを取得
+    const loginRes = await callApi({ action: 'login', email: pendingLoginEmail, password: currentPassword });
+    if (!loginRes.success) {
+      showError(forceChangeError, loginRes.message || '現在のパスワードが正しくありません。');
+      return;
+    }
+
+    const changeRes = await callApi({
+      action: 'changePassword',
+      token: loginRes.token,
+      currentPassword,
+      newPassword
+    });
+
+    if (changeRes.success) {
+      const session = { token: loginRes.token, nickname: loginRes.nickname, email: loginRes.email };
+      saveSession(session);
+      pendingLoginEmail = null;
+      showBoard(session);
+    } else {
+      showError(forceChangeError, changeRes.message || 'パスワード変更に失敗しました。');
+    }
+  } catch (err) {
+    showError(forceChangeError, '通信エラーが発生しました。時間をおいて再度お試しください。');
   } finally {
     setLoading(false);
   }
@@ -78,7 +277,75 @@ async function onLogout() {
   } finally {
     clearSession();
     setLoading(false);
-    showLogin();
+    showScreen('login');
+  }
+}
+
+/* ---- ニックネーム変更 ---- */
+async function onNicknameSubmit(e) {
+  e.preventDefault();
+  hide(nicknameError);
+  hide(nicknameMessage);
+
+  const session = getSession();
+  if (!session) { showScreen('login'); return; }
+
+  const nickname = profileNickname.value.trim();
+
+  setLoading(true);
+  try {
+    const res = await callApi({ action: 'updateProfile', token: session.token, nickname });
+    if (res.success) {
+      session.nickname = res.nickname;
+      saveSession(session);
+      userNameLabel.textContent = `${session.nickname} さん`;
+      showInfo(nicknameMessage, 'ニックネームを更新しました。');
+    } else {
+      handleSessionAwareError(res, nicknameError);
+    }
+  } catch (err) {
+    showError(nicknameError, '通信エラーが発生しました。');
+  } finally {
+    setLoading(false);
+  }
+}
+
+/* ---- パスワード変更（マイページから） ---- */
+async function onPwChangeSubmit(e) {
+  e.preventDefault();
+  hide(pwChangeError);
+  hide(pwChangeMessage);
+
+  const session = getSession();
+  if (!session) { showScreen('login'); return; }
+
+  const currentPassword = document.getElementById('pwCurrent').value;
+  const newPassword = document.getElementById('pwNew').value;
+  const newPassword2 = document.getElementById('pwNew2').value;
+
+  if (newPassword !== newPassword2) {
+    showError(pwChangeError, '新しいパスワードが一致しません。');
+    return;
+  }
+
+  setLoading(true);
+  try {
+    const res = await callApi({
+      action: 'changePassword',
+      token: session.token,
+      currentPassword,
+      newPassword
+    });
+    if (res.success) {
+      pwChangeForm.reset();
+      showInfo(pwChangeMessage, 'パスワードを更新しました。');
+    } else {
+      handleSessionAwareError(res, pwChangeError);
+    }
+  } catch (err) {
+    showError(pwChangeError, '通信エラーが発生しました。');
+  } finally {
+    setLoading(false);
   }
 }
 
@@ -88,7 +355,7 @@ async function onPostSubmit(e) {
   hide(postError);
 
   const session = getSession();
-  if (!session) { showLogin(); return; }
+  if (!session) { showScreen('login'); return; }
 
   const content = postContent.value.trim();
   if (!content) return;
@@ -156,7 +423,7 @@ function renderPosts(posts) {
 function handleSessionAwareError(res, errorEl) {
   if (res.message && res.message.includes('セッション')) {
     clearSession();
-    showLogin();
+    showScreen('login');
     showError(loginError, res.message);
   } else {
     showError(errorEl, res.message || 'エラーが発生しました。');
@@ -164,16 +431,15 @@ function handleSessionAwareError(res, errorEl) {
 }
 
 /* ---- 画面切り替え ---- */
-function showLogin() {
-  hide(boardScreen);
-  show(loginScreen);
-  loginForm.reset();
+function showScreen(name) {
+  Object.values(screens).forEach(hide);
+  show(screens[name]);
+  if (name === 'login') loginForm.reset();
 }
 
 function showBoard(session) {
-  hide(loginScreen);
-  show(boardScreen);
-  userNameLabel.textContent = `${session.name} さん`;
+  showScreen('board');
+  userNameLabel.textContent = `${session.nickname} さん`;
   loadPosts();
 }
 
@@ -207,6 +473,7 @@ function clearSession() {
 function show(el) { el.classList.remove('hidden'); }
 function hide(el) { el.classList.add('hidden'); }
 function showError(el, msg) { el.textContent = msg; show(el); }
+function showInfo(el, msg) { el.textContent = msg; show(el); }
 function setLoading(isLoading) {
   if (isLoading) show(loading); else hide(loading);
 }

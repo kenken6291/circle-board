@@ -24,12 +24,115 @@
         <input type="email" id="loginEmail" required placeholder="you@example.com" autocomplete="username">
 
         <label for="loginPassword">パスワード</label>
-        <input type="password" id="loginPassword" required placeholder="パスワード" autocomplete="current-password">
+        <div class="pw-field">
+          <input type="password" id="loginPassword" required placeholder="パスワード" autocomplete="current-password">
+          <button type="button" class="pw-toggle" data-target="loginPassword">表示</button>
+        </div>
 
         <button type="submit" class="btn btn-primary">ログイン</button>
       </form>
 
       <p id="loginError" class="error-text hidden"></p>
+      <p id="loginMessage" class="info-text hidden"></p>
+
+      <div class="link-row">
+        <a href="#" id="showRegister">新規会員登録</a>
+        <a href="#" id="showForgot">パスワードを忘れた方</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 新規会員登録画面 -->
+  <div id="registerScreen" class="screen hidden">
+    <div class="card login-card">
+      <h1 class="app-title">📝 新規会員登録</h1>
+      <p class="app-sub">仮パスワードをメールで発行します</p>
+
+      <form id="registerForm">
+        <label for="registerEmail">メールアドレス</label>
+        <input type="email" id="registerEmail" required placeholder="you@example.com" autocomplete="email">
+
+        <label for="registerNickname">ニックネーム（表示名）</label>
+        <input type="text" id="registerNickname" required maxlength="30" placeholder="例）はなこ">
+
+        <div class="terms-box">
+          <p class="terms-title">注意事項・免責事項</p>
+          <div class="terms-text">
+            ・本掲示板はサークルメンバー限定の簡易的な連絡・交流用ツールです。<br>
+            ・個人情報や機密情報の投稿は避けてください。<br>
+            ・投稿内容の管理・保存について運営者は最善を尽くしますが、システム上の不具合等による情報の消失・漏洩について、運営者は責任を負いかねます。<br>
+            ・他の会員を誹謗中傷する投稿、公序良俗に反する投稿は削除・アカウント停止の対象となる場合があります。<br>
+            ・本サービスは無償のボランティア運営であり、予告なく内容の変更・提供の停止を行う場合があります。
+          </div>
+          <label class="checkbox-label">
+            <input type="checkbox" id="agreeTerms" required>
+            上記の注意事項・免責事項に同意します
+          </label>
+        </div>
+
+        <button type="submit" class="btn btn-primary">登録する</button>
+      </form>
+
+      <p id="registerError" class="error-text hidden"></p>
+      <p id="registerMessage" class="info-text hidden"></p>
+
+      <div class="link-row">
+        <a href="#" id="backToLoginFromRegister">ログイン画面に戻る</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- パスワード再発行画面 -->
+  <div id="forgotScreen" class="screen hidden">
+    <div class="card login-card">
+      <h1 class="app-title">🔑 パスワード再発行</h1>
+      <p class="app-sub">登録済みメールアドレスに仮パスワードを送信します</p>
+
+      <form id="forgotForm">
+        <label for="forgotEmail">メールアドレス</label>
+        <input type="email" id="forgotEmail" required placeholder="you@example.com">
+
+        <button type="submit" class="btn btn-primary">仮パスワードを送信</button>
+      </form>
+
+      <p id="forgotError" class="error-text hidden"></p>
+      <p id="forgotMessage" class="info-text hidden"></p>
+
+      <div class="link-row">
+        <a href="#" id="backToLoginFromForgot">ログイン画面に戻る</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 初回ログイン時：パスワード変更必須画面 -->
+  <div id="forceChangeScreen" class="screen hidden">
+    <div class="card login-card">
+      <h1 class="app-title">🔒 パスワード変更</h1>
+      <p class="app-sub">初回ログインのため、新しいパスワードを設定してください</p>
+
+      <form id="forceChangeForm">
+        <label for="forceCurrentPassword">現在の仮パスワード</label>
+        <div class="pw-field">
+          <input type="password" id="forceCurrentPassword" required autocomplete="current-password">
+          <button type="button" class="pw-toggle" data-target="forceCurrentPassword">表示</button>
+        </div>
+
+        <label for="forceNewPassword">新しいパスワード（8文字以上）</label>
+        <div class="pw-field">
+          <input type="password" id="forceNewPassword" required minlength="8" autocomplete="new-password">
+          <button type="button" class="pw-toggle" data-target="forceNewPassword">表示</button>
+        </div>
+
+        <label for="forceNewPassword2">新しいパスワード（確認）</label>
+        <div class="pw-field">
+          <input type="password" id="forceNewPassword2" required minlength="8" autocomplete="new-password">
+          <button type="button" class="pw-toggle" data-target="forceNewPassword2">表示</button>
+        </div>
+
+        <button type="submit" class="btn btn-primary">パスワードを変更してログイン</button>
+      </form>
+
+      <p id="forceChangeError" class="error-text hidden"></p>
     </div>
   </div>
 
@@ -39,6 +142,7 @@
       <h1 class="app-title-sm">🏠 サークル掲示板</h1>
       <div class="user-info">
         <span id="userNameLabel"></span>
+        <button id="profileBtn" class="btn btn-ghost">設定</button>
         <button id="logoutBtn" class="btn btn-ghost">ログアウト</button>
       </div>
     </header>
@@ -56,6 +160,56 @@
 
       <div id="postList" class="post-list"></div>
       <p id="emptyMessage" class="empty-message hidden">まだ投稿がありません。最初の投稿をしてみましょう！</p>
+    </main>
+  </div>
+
+  <!-- マイページ（プロフィール編集）画面 -->
+  <div id="profileScreen" class="screen hidden">
+    <header class="board-header">
+      <h1 class="app-title-sm">⚙️ マイページ</h1>
+      <div class="user-info">
+        <button id="backToBoardBtn" class="btn btn-ghost">掲示板に戻る</button>
+      </div>
+    </header>
+
+    <main class="board-main">
+      <div class="card">
+        <h2 class="section-title">ニックネーム変更</h2>
+        <form id="nicknameForm">
+          <label for="profileNickname">ニックネーム</label>
+          <input type="text" id="profileNickname" required maxlength="30">
+          <button type="submit" class="btn btn-primary">ニックネームを更新</button>
+        </form>
+        <p id="nicknameError" class="error-text hidden"></p>
+        <p id="nicknameMessage" class="info-text hidden"></p>
+      </div>
+
+      <div class="card" style="margin-top:20px;">
+        <h2 class="section-title">パスワード変更</h2>
+        <form id="pwChangeForm">
+          <label for="pwCurrent">現在のパスワード</label>
+          <div class="pw-field">
+            <input type="password" id="pwCurrent" required autocomplete="current-password">
+            <button type="button" class="pw-toggle" data-target="pwCurrent">表示</button>
+          </div>
+
+          <label for="pwNew">新しいパスワード（8文字以上）</label>
+          <div class="pw-field">
+            <input type="password" id="pwNew" required minlength="8" autocomplete="new-password">
+            <button type="button" class="pw-toggle" data-target="pwNew">表示</button>
+          </div>
+
+          <label for="pwNew2">新しいパスワード（確認）</label>
+          <div class="pw-field">
+            <input type="password" id="pwNew2" required minlength="8" autocomplete="new-password">
+            <button type="button" class="pw-toggle" data-target="pwNew2">表示</button>
+          </div>
+
+          <button type="submit" class="btn btn-primary">パスワードを更新</button>
+        </form>
+        <p id="pwChangeError" class="error-text hidden"></p>
+        <p id="pwChangeMessage" class="info-text hidden"></p>
+      </div>
     </main>
   </div>
 
